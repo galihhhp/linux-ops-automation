@@ -1,0 +1,5 @@
+- name: setup server
+  hosts: all
+  become: true
+  roles:
+    - role: common

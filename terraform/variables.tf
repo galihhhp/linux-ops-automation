@@ -43,7 +43,7 @@ variable "instance_type" {
 variable "instance_name" {
   description = "Tag Name untuk EC2 instance"
   type        = string
-  default     = "ec2"
+  default     = "linux-ops"
 }
 
 variable "ubuntu_ami_owner" {

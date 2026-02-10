@@ -1,0 +1,35 @@
+---
+- name: Install packages
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - curl
+      - vim
+      - htop
+      - postgresql-client
+      - mysql-client
+      - git
+      - chrony
+      - tzdata
+    state: present
+
+- name: Set timezone to Asia/Jakarta
+  become: true
+  community.general.timezone:
+    name: Asia/Jakarta
+
+- name: Deploy chrony.conf template
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify: restart chronyd
+
+- name: Ensure chronyd is started and enabled
+  ansible.builtin.service:
+    name: chronyd
+    state: started
+    enabled: true

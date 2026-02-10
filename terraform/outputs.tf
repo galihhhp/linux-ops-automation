@@ -42,3 +42,28 @@ output "ssh_command" {
   description = "Command untuk SSH ke EC2 instance"
   value       = "ssh -i <path-to-key> ubuntu@${aws_instance.web.public_ip}"
 }
+
+output "s3_bucket_name" {
+  description = "Nama S3 bucket untuk backup"
+  value       = aws_s3_bucket.main.id
+}
+
+output "s3_bucket_arn" {
+  description = "ARN S3 bucket"
+  value       = aws_s3_bucket.main.arn
+}
+
+output "s3_bucket_region" {
+  description = "Region S3 bucket"
+  value       = aws_s3_bucket.main.region
+}
+
+output "iam_backup_user" {
+  description = "IAM user dengan akses S3 backup"
+  value       = data.aws_iam_user.backup.user_name
+}
+
+output "iam_backup_policy_arn" {
+  description = "ARN policy S3 backup yang ter-attach ke IAM user"
+  value       = aws_iam_policy.s3_backup.arn
+}

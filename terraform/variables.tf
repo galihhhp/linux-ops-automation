@@ -57,3 +57,33 @@ variable "ubuntu_version" {
   type        = string
   default     = "ubuntu-jammy-22.04"
 }
+
+variable "s3_bucket_name" {
+  description = "Nama S3 bucket untuk backup"
+  type        = string
+  default     = "linux-ops-bucket"
+}
+
+variable "s3_lifecycle_transition_days" {
+  description = "Hari sebelum objek di-transition ke Glacier"
+  type        = number
+  default     = 30
+}
+
+variable "s3_lifecycle_noncurrent_transition_days" {
+  description = "Hari sebelum versi noncurrent di-transition ke Glacier"
+  type        = number
+  default     = 7
+}
+
+variable "s3_lifecycle_noncurrent_expiration_days" {
+  description = "Hari sebelum versi noncurrent dihapus"
+  type        = number
+  default     = 60
+}
+
+variable "iam_backup_user" {
+  description = "IAM user yang diberi akses ke S3 backup bucket"
+  type        = string
+  default     = "inituser"
+}

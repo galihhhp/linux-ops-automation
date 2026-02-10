@@ -73,3 +73,86 @@ resource "aws_instance" "web" {
     Name = var.instance_name
   }
 }
+
+data "aws_iam_policy_document" "s3_backup" {
+  statement {
+    sid    = "S3BackupFullAccess"
+    effect = "Allow"
+    actions = ["s3:*"]
+    resources = [
+      "arn:aws:s3:::${var.s3_bucket_name}",
+      "arn:aws:s3:::${var.s3_bucket_name}/*"
+    ]
+  }
+}
+
+data "aws_iam_user" "backup" {
+  user_name = var.iam_backup_user
+}
+
+resource "aws_iam_policy" "s3_backup" {
+  name        = "S3BackupBucketPolicy"
+  description = "Allow S3 bucket creation and backup operations"
+
+  policy = data.aws_iam_policy_document.s3_backup.json
+}
+
+resource "aws_iam_user_policy_attachment" "s3_backup" {
+  user       = data.aws_iam_user.backup.user_name
+  policy_arn = aws_iam_policy.s3_backup.arn
+}
+
+resource "aws_s3_bucket" "main" {
+  depends_on = [aws_iam_user_policy_attachment.s3_backup]
+  bucket        = var.s3_bucket_name
+  region        = var.aws_region
+  force_destroy = true # learn purposes
+
+  tags = {
+    Name        = "Linux Ops Bucket"
+    Environment = "Dev"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "versioning_main" {
+  bucket = aws_s3_bucket.main.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "main" {
+  bucket = aws_s3_bucket.main.id
+
+  rule {
+    id     = "backup-lifecycle"
+    status = "Enabled"
+
+    filter {}
+
+    transition {
+      days          = var.s3_lifecycle_transition_days
+      storage_class = "GLACIER"
+    }
+
+    noncurrent_version_transition {
+      noncurrent_days = var.s3_lifecycle_noncurrent_transition_days
+      storage_class   = "GLACIER"
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = var.s3_lifecycle_noncurrent_expiration_days
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "main" {
+  bucket = aws_s3_bucket.main.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+

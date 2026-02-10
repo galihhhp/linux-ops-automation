@@ -12,3 +12,9 @@ instance_name = "ec2"
 
 ubuntu_ami_owner = "099720109477"
 ubuntu_version   = "ubuntu-jammy-22.04"
+
+s3_bucket_name                         = "linux-ops-bucket"
+s3_lifecycle_transition_days           = 30
+s3_lifecycle_noncurrent_transition_days = 7
+s3_lifecycle_noncurrent_expiration_days = 60
+iam_backup_user                        = "inituser"

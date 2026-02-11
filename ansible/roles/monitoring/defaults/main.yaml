@@ -1,0 +1,5 @@
+---
+monitoring_install_path: /opt/monitoring
+monitoring_enable_cron: false
+monitoring_cron_hour: "*/1"
+monitoring_cron_minute: "0"

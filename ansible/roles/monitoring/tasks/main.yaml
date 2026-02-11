@@ -1,0 +1,25 @@
+---
+- name: Ensure monitoring directory exists
+  ansible.builtin.file:
+    path: "{{ monitoring_install_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy health-check script
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/maintenance/health-check.sh"
+    dest: "{{ monitoring_install_path }}/"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Add cron for health check
+  ansible.builtin.cron:
+    name: "health-check"
+    minute: "{{ monitoring_cron_minute }}"
+    hour: "{{ monitoring_cron_hour }}"
+    job: "{{ monitoring_install_path }}/health-check.sh >> /var/log/health-check.log 2>&1 || true"
+    user: root
+  when: monitoring_enable_cron | bool

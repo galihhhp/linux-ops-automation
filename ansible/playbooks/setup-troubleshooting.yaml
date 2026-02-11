@@ -1,0 +1,6 @@
+---
+- name: Deploy troubleshooting scripts on EC2
+  hosts: all
+  become: true
+  roles:
+    - role: troubleshooting

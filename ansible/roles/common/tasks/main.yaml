@@ -12,6 +12,7 @@
       - chrony
       - tzdata
       - python3-psycopg2
+      - awscli
     state: present
 
 - name: Set timezone to Asia/Jakarta

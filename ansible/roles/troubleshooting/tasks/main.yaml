@@ -1,0 +1,22 @@
+---
+- name: Ensure troubleshooting directory exists
+  ansible.builtin.file:
+    path: "{{ troubleshooting_install_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy troubleshooting scripts
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/troubleshooting/{{ item }}"
+    dest: "{{ troubleshooting_install_path }}/"
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - disk-usage-check.sh
+    - memory-analysis.sh
+    - process-inspector.sh
+    - network-debug.sh
+    - log-analyzer.sh

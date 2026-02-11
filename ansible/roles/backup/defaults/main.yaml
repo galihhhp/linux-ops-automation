@@ -1,0 +1,9 @@
+---
+backup_dir: /var/backups
+backup_install_path: /opt/backup/scripts
+backup_bucket: ""
+backup_retention_days: 7
+backup_enable_cron: false
+backup_cron_hour: "2"
+backup_cron_minute: "0"
+backup_db_name: "{{ db_name | default('app_db') }}"

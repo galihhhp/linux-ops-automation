@@ -1,0 +1,41 @@
+---
+- name: Ensure backup directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ backup_dir }}"
+    - "{{ backup_install_path }}"
+    - "{{ backup_install_path }}/maintenance"
+
+- name: Deploy backup scripts
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/backup/{{ item }}"
+    dest: "{{ backup_install_path }}/"
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - postgres-backup.sh
+    - mysql-backup.sh
+    - files-backup.sh
+    - upload-to-s3.sh
+
+- name: Deploy cleanup script
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/maintenance/cleanup-old-backups.sh"
+    dest: "{{ backup_install_path }}/maintenance/"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy backup env config
+  ansible.builtin.template:
+    src: backup.env.j2
+    dest: /etc/default/backup
+    owner: root
+    group: root
+    mode: "0600"

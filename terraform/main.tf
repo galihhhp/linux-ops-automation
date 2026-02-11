@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 }
 
@@ -102,8 +106,13 @@ resource "aws_iam_user_policy_attachment" "s3_backup" {
   policy_arn = aws_iam_policy.s3_backup.arn
 }
 
+resource "time_sleep" "wait_iam_propagation" {
+  depends_on      = [aws_iam_user_policy_attachment.s3_backup]
+  create_duration = "15s"
+}
+
 resource "aws_s3_bucket" "main" {
-  depends_on = [aws_iam_user_policy_attachment.s3_backup]
+  depends_on = [time_sleep.wait_iam_propagation]
   bucket        = var.s3_bucket_name
   region        = var.aws_region
   force_destroy = true # learn purposes

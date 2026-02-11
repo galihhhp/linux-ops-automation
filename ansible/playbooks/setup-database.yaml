@@ -1,0 +1,6 @@
+---
+- name: Setup PostgreSQL database on EC2
+  hosts: all
+  become: true
+  roles:
+    - role: database

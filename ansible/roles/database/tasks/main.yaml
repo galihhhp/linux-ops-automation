@@ -1,0 +1,79 @@
+---
+- name: Install PostgreSQL
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - postgresql
+      - postgresql-contrib
+    state: present
+
+- name: Ensure PostgreSQL is started and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Ensure include_dir is set in postgresql.conf
+  ansible.builtin.lineinfile:
+    path: "{{ pg_conf_dir }}/postgresql.conf"
+    regexp: "^#?include_dir\\s*="
+    line: "include_dir = 'conf.d'"
+  notify: restart postgresql
+
+- name: Ensure conf.d exists for PostgreSQL
+  ansible.builtin.file:
+    path: "{{ pg_conf_dir }}/conf.d"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0755"
+
+- name: Deploy PostgreSQL custom config
+  ansible.builtin.template:
+    src: 99-custom.conf.j2
+    dest: "{{ pg_conf_dir }}/conf.d/99-custom.conf"
+    owner: postgres
+    group: postgres
+    mode: "0644"
+  notify: restart postgresql
+
+- name: Deploy pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ pg_conf_dir }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  notify: reload postgresql
+
+- name: Create application database user
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    state: present
+    role_attr_flags: NOSUPERUSER
+  become: true
+  become_user: postgres
+
+- name: Create application database
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Deploy seed SQL to target
+  ansible.builtin.copy:
+    src: seed.sql
+    dest: "/tmp/seed_{{ db_name }}.sql"
+    owner: postgres
+    group: postgres
+    mode: "0600"
+
+- name: Seed dummy data
+  community.postgresql.postgresql_script:
+    path: "/tmp/seed_{{ db_name }}.sql"
+    login_db: "{{ db_name }}"
+  become: true
+  become_user: postgres

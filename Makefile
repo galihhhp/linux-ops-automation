@@ -4,7 +4,7 @@ INVENTORY := inventory/aws_ec2.yaml
 
 .PHONY: terraform-init terraform-plan terraform-apply terraform-destroy terraform-output
 .PHONY: provision provision-backup provision-database provision-monitoring provision-troubleshooting
-.PHONY: backup-postgres health-check ping encrypt-secrets decrypt-secrets
+.PHONY: backup-postgres restore-postgres health-check status ping encrypt-secrets decrypt-secrets
 
 terraform-init:
 	cd $(TERRAFORM_DIR) && terraform init
@@ -47,8 +47,15 @@ provision-troubleshooting:
 backup-postgres:
 	cd $(ANSIBLE_DIR) && ansible all -i $(INVENTORY) -m command -a "/opt/backup/scripts/postgres-backup-full.sh" --become
 
+RESTORE_ARGS ?= latest
+restore-postgres:
+	cd $(ANSIBLE_DIR) && ansible all -i $(INVENTORY) -m command -a "/opt/backup/scripts/postgres-restore.sh $(RESTORE_ARGS)" --become
+
 health-check:
 	cd $(ANSIBLE_DIR) && ansible all -i $(INVENTORY) -m shell -a "/opt/monitoring/health-check.sh" --become
+
+status:
+	cd $(ANSIBLE_DIR) && ansible all -i $(INVENTORY) -m command -a "/usr/local/bin/status-check.sh" --become
 
 ping:
 	cd $(ANSIBLE_DIR) && ansible all -i $(INVENTORY) -m ping

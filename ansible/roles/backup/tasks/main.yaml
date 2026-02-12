@@ -20,6 +20,7 @@
     mode: "0755"
   loop:
     - postgres-backup.sh
+    - postgres-backup-full.sh
     - mysql-backup.sh
     - files-backup.sh
     - upload-to-s3.sh
@@ -39,3 +40,12 @@
     owner: root
     group: root
     mode: "0600"
+
+- name: Install cron for PostgreSQL backup
+  ansible.builtin.cron:
+    name: "PostgreSQL backup to S3"
+    minute: "{{ backup_cron_minute }}"
+    hour: "{{ backup_cron_hour }}"
+    job: "/opt/backup/scripts/postgres-backup-full.sh"
+    user: root
+    state: "{{ 'present' if backup_enable_cron | default(false) | bool else 'absent' }}"

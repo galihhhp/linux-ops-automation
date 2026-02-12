@@ -21,6 +21,7 @@ secrets/sops/secrets.yaml
 secrets/**/*.yaml
 !secrets/**/*.enc.yaml
 !secrets/**/.sops.yaml
+!secrets/**/*.example
 
 # SSH Keys
 *.pem

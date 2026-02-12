@@ -3,4 +3,9 @@
   hosts: all
   become: true
   roles:
+    - role: secrets
     - role: database
+      vars:
+        db_user: "{{ sops_db_user | default('app_user') }}"
+        db_password: "{{ sops_db_password | default('inipassword') }}"
+        db_name: "{{ sops_db_name | default('app_db') }}"

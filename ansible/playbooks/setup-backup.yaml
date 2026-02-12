@@ -2,8 +2,7 @@
 - name: Setup backup scripts on EC2
   hosts: all
   become: true
-  vars:
-    backup_bucket: "{{ lookup('env', 'BACKUP_BUCKET') | default('linux-ops-bucket', true) }}"
   roles:
+    - role: secrets
     - role: common
     - role: backup

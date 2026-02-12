@@ -35,3 +35,27 @@
     name: chronyd
     state: started
     enabled: true
+
+- name: Deploy logrotate config
+  ansible.builtin.copy:
+    src: linux-ops.logrotate
+    dest: /etc/logrotate.d/linux-ops
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy log-rotation script
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/maintenance/log-rotation.sh"
+    dest: /usr/local/bin/log-rotation.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy status-check script
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/maintenance/status-check.sh"
+    dest: /usr/local/bin/status-check.sh
+    owner: root
+    group: root
+    mode: "0755"

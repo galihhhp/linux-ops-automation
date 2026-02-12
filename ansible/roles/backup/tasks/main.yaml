@@ -21,6 +21,7 @@
   loop:
     - postgres-backup.sh
     - postgres-backup-full.sh
+    - postgres-restore.sh
     - mysql-backup.sh
     - files-backup.sh
     - upload-to-s3.sh

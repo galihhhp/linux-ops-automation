@@ -33,7 +33,7 @@ provision-backup:
 
 provision-database:
 	@test -f $(SECRETS_ENC) || (echo "No $(SECRETS_ENC) found"; exit 1)
-	@SECRETS_DEC=$$(mktemp -t linux-ops-secrets-XXXXXX.yaml); \
+	@SECRETS_DEC=$$(mktemp /tmp/linux-ops-secrets-XXXXXX.yaml); \
 	trap 'rm -f $$SECRETS_DEC' EXIT; \
 	GPG_TTY=$$(tty) SOPS_GPG_EXEC="$(SOPS_GPG_EXEC)" sops -d $(SECRETS_ENC) > $$SECRETS_DEC && \
 	cd $(ANSIBLE_DIR) && ansible-playbook playbooks/setup-database.yaml -i $(INVENTORY) -e "secrets_dec_file=$$SECRETS_DEC"
@@ -67,7 +67,7 @@ SOPS_GPG_EXEC ?= $(shell which gpg 2>/dev/null || true)
 
 encrypt-secrets:
 	@test -f $(SECRETS_PLAIN) || (echo "Create $(SECRETS_PLAIN) from secrets.yaml.example first"; exit 1)
-	sops --config $(SOPS_CONFIG) -e $(SECRETS_PLAIN) > $(SECRETS_ENC)
+	GPG_TTY=$$(tty) SOPS_GPG_EXEC="$(SOPS_GPG_EXEC)" sops --config $(SOPS_CONFIG) -e $(SECRETS_PLAIN) > $(SECRETS_ENC)
 	@echo "Encrypted: $(SECRETS_ENC)"
 
 decrypt-secrets:

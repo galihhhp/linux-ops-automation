@@ -14,6 +14,14 @@ terraform {
 provider "aws" {
   region  = var.aws_region
   profile = var.aws_profile
+
+  default_tags {
+    tags = {
+      Project     = var.project_name
+      Environment = var.environment
+      ManagedBy   = "terraform"
+    }
+  }
 }
 
 resource "aws_key_pair" "admin" {
@@ -73,6 +81,12 @@ resource "aws_instance" "web" {
 
   vpc_security_group_ids = [aws_security_group.main.id]
 
+  root_block_device {
+    volume_size = var.ec2_root_volume_size
+    volume_type = var.ec2_root_volume_type
+    encrypted   = true
+  }
+
   tags = {
     Name = var.instance_name
   }
@@ -80,8 +94,8 @@ resource "aws_instance" "web" {
 
 data "aws_iam_policy_document" "s3_backup" {
   statement {
-    sid    = "S3BackupFullAccess"
-    effect = "Allow"
+    sid     = "S3BackupFullAccess"
+    effect  = "Allow"
     actions = ["s3:*"]
     resources = [
       "arn:aws:s3:::${var.s3_bucket_name}",
@@ -112,14 +126,12 @@ resource "time_sleep" "wait_iam_propagation" {
 }
 
 resource "aws_s3_bucket" "main" {
-  depends_on = [time_sleep.wait_iam_propagation]
+  depends_on    = [time_sleep.wait_iam_propagation]
   bucket        = var.s3_bucket_name
-  region        = var.aws_region
-  force_destroy = true # learn purposes
+  force_destroy = true
 
   tags = {
-    Name        = "Linux Ops Bucket"
-    Environment = "Dev"
+    Name = "${var.project_name}-backup"
   }
 }
 

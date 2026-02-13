@@ -55,7 +55,7 @@ output "s3_bucket_arn" {
 
 output "s3_bucket_region" {
   description = "Region S3 bucket"
-  value       = aws_s3_bucket.main.region
+  value       = var.aws_region
 }
 
 output "iam_backup_user" {

@@ -2,10 +2,27 @@
 - name: Setup PostgreSQL database on EC2
   hosts: all
   become: true
-  roles:
-    - role: secrets
-    - role: database
+
+  tasks:
+    - name: Decrypt SOPS secrets
+      ansible.builtin.include_role:
+        name: secrets
+
+    - name: Validate required secrets are set
+      ansible.builtin.assert:
+        that:
+          - sops_db_user | default('') | length > 0
+          - sops_db_password | default('') | length > 0
+          - sops_db_name | default('') | length > 0
+        fail_msg: >-
+          SOPS secrets missing or empty. Ensure secrets.enc.yaml is properly
+          encrypted and the GPG key is available. Run: make decrypt-secrets
+          to verify.
+
+    - name: Setup database
+      ansible.builtin.include_role:
+        name: database
       vars:
-        db_user: "{{ sops_db_user | default('app_user') }}"
-        db_password: "{{ sops_db_password | default('inipassword') }}"
-        db_name: "{{ sops_db_name | default('app_db') }}"
+        db_user: "{{ sops_db_user }}"
+        db_password: "{{ sops_db_password }}"
+        db_name: "{{ sops_db_name }}"
